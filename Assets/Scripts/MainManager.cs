@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,17 +13,30 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScore;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
-    
+
     private bool m_GameOver = false;
+
+    private MenuUIHandler _handler;
 
     
     // Start is called before the first frame update
     void Start()
     {
+        if (MenuUIHandler.instance._bestScore.score >= 0)
+        {
+            BestScore.text =
+                $"Best Score : {MenuUIHandler.instance._bestScore.name} : {MenuUIHandler.instance._bestScore.score}";
+        }
+        else
+        {
+            BestScore.text = "";
+        }
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -57,6 +72,12 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                var instance = MenuUIHandler.instance;
+                instance._data.score = m_Points;
+                if (instance._bestScore.score < m_Points)
+                {
+                    instance._bestScore = instance._data;
+                }
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
@@ -66,6 +87,11 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+    }
+
+    private void OnApplicationQuit()
+    {
+        MenuUIHandler.instance._data.score = m_Points;
     }
 
     public void GameOver()
